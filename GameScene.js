@@ -39,11 +39,32 @@ class GameScene extends Phaser.Scene
             });
         }
 
+        // Creates stars
+        createStars() {
+            gameState.stars = this.physics.add.group({
+                key: 'star',
+                repeat: 11,
+                setXY: { x: 12, y: 0, stepX: 140 }
+            });
+            
+            gameState.stars.children.iterate(child => {
+                child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+            });
+
+            /*
+            if (!gameState.stars.isTouching.down) {
+                gameState.stars.setVelocityX(50);
+            } else {
+                gameState.stars.setVelocityX(0);
+            }
+            */
+        }
+
         create () {
             gameState.score = 0;
 
             this.createAnimations();
-
+            
             // Create background gradient
             const graphics = this.add.graphics();
             graphics.fillGradientStyle(0x169ac5, 0x169ac5, 0x9addf3, 0x9addf3, 1);
@@ -59,25 +80,9 @@ class GameScene extends Phaser.Scene
              ground.create(800, 1216, 'ground').setScale(4).refreshBody();
 
             // Create platforms
-            gameState.platforms = this.physics.add.group({
-                allowGravity: false,
-                immovable: true
-            });
-            for (let i = 0; i < 12; i++) {
-                let randX = Math.floor(Math.random() * 1600) + 50;
-                gameState.platforms.create(randX, 150 + (i * 150), 'ground');
-                }
-
-            // Create stars
-            const stars = this.physics.add.group({
-                key: 'star',
-                repeat: 11,
-                setXY: { x: 12, y: 0, stepX: 70 }
-            });
-
-            stars.children.iterate(child => {
-                child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-            });
+            gameState.platforms = this.physics.add.group();
+            
+            this.createStars();
 
             // Creates bombs
             gameState.bombs = this.physics.add.group();
@@ -106,14 +111,14 @@ class GameScene extends Phaser.Scene
             gameState.player.setCollideWorldBounds(true);
             this.physics.add.collider(gameState.player, gameState.platforms);
             this.physics.add.collider(gameState.player, ground);
-            this.physics.add.collider(stars, gameState.platforms);
-            this.physics.add.collider(stars, ground);
+            this.physics.add.collider(gameState.stars, gameState.platforms);
+            this.physics.add.collider(gameState.stars, ground);
             this.physics.add.collider(gameState.bombs, gameState.platforms);
             this.physics.add.collider(gameState.bombs, ground);
             this.physics.add.collider(gameState.player, gameState.bombs, hitBomb, null, this);
 
             // Creates logic for player to collect stars when overlaping them
-            this.physics.add.overlap(gameState.player, stars, collectStar, null, this);
+            this.physics.add.overlap(gameState.player, gameState.stars, collectStar, null, this);
             function collectStar (player, star) {
                 star.disableBody(true, true);
 
@@ -122,8 +127,8 @@ class GameScene extends Phaser.Scene
                 gameState.scoreText.setText(`Score: ${gameState.score}`);
 
                 // Generates new stars when all the current stars are collected
-                if (stars.countActive(true) === 0) {
-                    stars.children.iterate(function (child) {
+                if (gameState.stars.countActive(true) === 0) {
+                    gameState.stars.children.iterate(function (child) {
                         child.enableBody(true, child.x, 0, true, true);
                     });
                 
@@ -133,10 +138,7 @@ class GameScene extends Phaser.Scene
                     let bomb = gameState.bombs.create(x, 16, 'bomb');
                     bomb.setBounce(1);
                     bomb.setCollideWorldBounds(true);
-                    bomb.setVelocityY(Phaser.Math.Between(-200, 200), 20);
-                    bomb.setVelocityX(Phaser.Math.Between(-150, 150));
-
-                    // Rearranges platforms when all stars are collected
+                    bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
                 }
             }
 
