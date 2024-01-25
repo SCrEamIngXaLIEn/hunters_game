@@ -11,6 +11,13 @@ class GameScene extends Phaser.Scene
             this.load.spritesheet('player', 'assets/sprites/player.png', { frameWidth: 32, frameHeight: 48 });
         }
 
+        // Creates platforms
+        createPlatform(xIndex, yIndex) {
+            if (typeof yIndex === 'number' && typeof xIndex === 'number') {
+                gameState.platforms.create((220 * xIndex), yIndex * 70, 'ground').setOrigin(0, 0.5).refreshBody();
+            }
+        }
+
         // Create animations
         createAnimations() {
             this.anims.create({
@@ -40,30 +47,25 @@ class GameScene extends Phaser.Scene
             // Create background gradient
             const graphics = this.add.graphics();
             graphics.fillGradientStyle(0x169ac5, 0x169ac5, 0x9addf3, 0x9addf3, 1);
-            graphics.fillRect(0, 0, 800, 600);
+            graphics.fillRect(0, 0, gameState.gameOptions.levelWidth, gameState.gameOptions.levelHeight);
 
             // Create player sprite
-            gameState.player = this.physics.add.sprite(220, 512, 'player');
+            gameState.player = this.physics.add.sprite(220, 1112, 'player');
             gameState.player.setBounce(0.2);
             gameState.player.body.checkCollision.up = false;
 
              // Create ground
              const ground = this.physics.add.staticGroup();
-             ground.create(400, 576, 'ground').setScale(2.5).refreshBody();
+             ground.create(800, 1216, 'ground').setScale(4).refreshBody();
 
             // Create platforms
-            const platforms = this.physics.add.group({
+            gameState.platforms = this.physics.add.group({
                 allowGravity: false,
                 immovable: true
             });
-            /*
-            platforms.create(600, 400, 'ground');
-            platforms.create(50, 250, 'ground');
-            platforms.create(720, 220, 'ground');
-            */
-            for (let i = 0; i < 3; i++) {
-                let randX = Math.floor(Math.random() * 800) + 50;
-                platforms.create(randX, 100 + (i * 150), 'ground');
+            for (let i = 0; i < 12; i++) {
+                let randX = Math.floor(Math.random() * 1600) + 50;
+                gameState.platforms.create(randX, 150 + (i * 150), 'ground');
                 }
 
             // Create stars
@@ -92,16 +94,21 @@ class GameScene extends Phaser.Scene
             }
 
             // Creates score text
-            gameState.scoreText = this.add.text(16, 16, 'Score: 0', { font: '28px Cursive', fill: '#000' });
-            this.add.text(16, 48, `High Score: ${gameState.highScore}`, { font: '28px Cursive', fill: '#000'});
+            gameState.scoreText = this.add.text(16, 16, 'Score: 0', { font: '28px Cursive', fill: '#000' }).setScrollFactor(0);
+            this.add.text(16, 48, `High Score: ${gameState.highScore}`, { font: '28px Cursive', fill: '#000'}).setScrollFactor(0);
             
+            // Set up cameras
+            this.cameras.main.setBounds(0, 0, gameState.gameOptions.levelWidth, gameState.gameOptions.levelHeight);
+            this.physics.world.setBounds(0, 0, gameState.gameOptions.levelWidth, gameState.gameOptions.levelHeight);
+            this.cameras.main.startFollow(gameState.player, true, 0.5, 0.5);
+
             // Colliders
             gameState.player.setCollideWorldBounds(true);
-            this.physics.add.collider(gameState.player, platforms);
+            this.physics.add.collider(gameState.player, gameState.platforms);
             this.physics.add.collider(gameState.player, ground);
-            this.physics.add.collider(stars, platforms);
+            this.physics.add.collider(stars, gameState.platforms);
             this.physics.add.collider(stars, ground);
-            this.physics.add.collider(gameState.bombs, platforms);
+            this.physics.add.collider(gameState.bombs, gameState.platforms);
             this.physics.add.collider(gameState.bombs, ground);
             this.physics.add.collider(gameState.player, gameState.bombs, hitBomb, null, this);
 
@@ -136,12 +143,12 @@ class GameScene extends Phaser.Scene
             // Display and remove pause screen
             const togglePauseScreen = () => {
                 if (gameState.isPaused) {
-                    gameState.pauseOverlay = this.add.rectangle(25, 90, 750, 400, 0xFFFFFF);
+                    gameState.pauseOverlay = this.add.rectangle(25, 90, 750, 400, 0xFFFFFF).setScrollFactor(0);
                     gameState.pauseOverlay.alpha = 0.75;
                     gameState.pauseOverlay.setOrigin(0, 0);
                     
-                    gameState.pauseOverlay.pauseText = this.add.text(320, 125, 'PAUSED', { font: '32px Cursive', fill: '#000' });
-                    gameState.pauseOverlay.resumeText = this.add.text(192, 425, 'Press ESC to resume game', { font: '32px Cursive', fill: '#000' });
+                    gameState.pauseOverlay.pauseText = this.add.text(320, 125, 'PAUSED', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0);
+                    gameState.pauseOverlay.resumeText = this.add.text(192, 425, 'Press ESC to resume game', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0);
                 } else {
                     gameState.pauseOverlay.destroy();
                     gameState.pauseOverlay.pauseText.destroy();

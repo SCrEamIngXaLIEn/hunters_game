@@ -2,7 +2,9 @@ const gameState = {
     gameOptions: {
         width: 800,
         height: 600,
-        gravity: 575
+        gravity: 575,
+        levelWidth: 1600,
+        levelHeight: 1200
     },
     isPaused: false,
     speed: 160,
