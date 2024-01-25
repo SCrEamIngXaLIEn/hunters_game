@@ -46,11 +46,10 @@ class GameScene extends Phaser.Scene
                 repeat: 11,
                 setXY: { x: 12, y: 0, stepX: 140 }
             });
-            
+                        
             gameState.stars.children.iterate(child => {
                 child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
             });
-
             /*
             if (!gameState.stars.isTouching.down) {
                 gameState.stars.setVelocityX(50);
@@ -116,6 +115,7 @@ class GameScene extends Phaser.Scene
             this.physics.add.collider(gameState.bombs, gameState.platforms);
             this.physics.add.collider(gameState.bombs, ground);
             this.physics.add.collider(gameState.player, gameState.bombs, hitBomb, null, this);
+            gameState.stars.setCollideWorldBounds(true);
 
             // Creates logic for player to collect stars when overlaping them
             this.physics.add.overlap(gameState.player, gameState.stars, collectStar, null, this);
