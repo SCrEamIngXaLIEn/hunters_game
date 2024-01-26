@@ -38,27 +38,7 @@ class GameScene extends Phaser.Scene
                 frameRate: 20
             });
         }
-
-        // Creates stars
-        createStars() {
-            gameState.stars = this.physics.add.group({
-                key: 'star',
-                repeat: 11,
-                setXY: { x: 12, y: 0, stepX: 140 }
-            });
-                        
-            gameState.stars.children.iterate(child => {
-                child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-            });
-            /*
-            if (!gameState.stars.isTouching.down) {
-                gameState.stars.setVelocityX(50);
-            } else {
-                gameState.stars.setVelocityX(0);
-            }
-            */
-        }
-
+               
         create () {
             gameState.score = 0;
 
@@ -80,8 +60,21 @@ class GameScene extends Phaser.Scene
 
             // Create platforms
             gameState.platforms = this.physics.add.group();
-            
-            this.createStars();
+
+            // Creates stars
+            gameState.stars = this.physics.add.group({
+                key: 'star',
+                repeat: 11,
+                setXY: { x: 12, y: 0, stepX: 140 },
+            });            
+                        
+            gameState.stars.children.iterate(child => {
+                child.setBounceY(Phaser.Math.FloatBetween(0.2, 0.4));
+                child.setCollideWorldBounds(true);
+                if (!child.body.touching.down) {
+                    child.setVelocityX(60);
+                }
+            });
 
             // Creates bombs
             gameState.bombs = this.physics.add.group();
@@ -91,15 +84,12 @@ class GameScene extends Phaser.Scene
                 player.setTint(0xff0000);
                 player.anims.play('turn');
                 this.scene.stop('GameScene');
-                this.scene.start('EndScene');
-                if (gameState.highScore < gameState.score) {
-                    gameState.highScore = gameState.score;
-                }
+                this.scene.start('EndScene');                
             }
 
             // Creates score text
             gameState.scoreText = this.add.text(16, 16, 'Score: 0', { font: '28px Cursive', fill: '#000' }).setScrollFactor(0);
-            this.add.text(16, 48, `High Score: ${gameState.highScore}`, { font: '28px Cursive', fill: '#000'}).setScrollFactor(0);
+            gameState.highScoreText = this.add.text(16, 48, `High Score: ${gameState.highScore}`, { font: '28px Cursive', fill: '#000'}).setScrollFactor(0);
             
             // Set up cameras
             this.cameras.main.setBounds(0, 0, gameState.gameOptions.levelWidth, gameState.gameOptions.levelHeight);
@@ -111,12 +101,18 @@ class GameScene extends Phaser.Scene
             this.physics.add.collider(gameState.player, gameState.platforms);
             this.physics.add.collider(gameState.player, ground);
             this.physics.add.collider(gameState.stars, gameState.platforms);
-            this.physics.add.collider(gameState.stars, ground);
+            this.physics.add.collider(gameState.stars, ground, onGround, null, this);
+            function onGround() {
+                gameState.stars.children.iterate(child => {
+                    if (child.body.touching.down) {
+                        child.setVelocityX(0);
+                    }
+                })
+            }
             this.physics.add.collider(gameState.bombs, gameState.platforms);
             this.physics.add.collider(gameState.bombs, ground);
             this.physics.add.collider(gameState.player, gameState.bombs, hitBomb, null, this);
-            gameState.stars.setCollideWorldBounds(true);
-
+                        
             // Creates logic for player to collect stars when overlaping them
             this.physics.add.overlap(gameState.player, gameState.stars, collectStar, null, this);
             function collectStar (player, star) {
@@ -125,6 +121,10 @@ class GameScene extends Phaser.Scene
                 // Adds to score when a star is collected
                 gameState.score += 10;
                 gameState.scoreText.setText(`Score: ${gameState.score}`);
+                if (gameState.score > gameState.highScore) {
+                    gameState.highScore = gameState.score;
+                    gameState.highScoreText.setText(`High Score: ${gameState.highScore}`);
+                }
 
                 // Generates new stars when all the current stars are collected
                 if (gameState.stars.countActive(true) === 0) {
@@ -138,11 +138,12 @@ class GameScene extends Phaser.Scene
                     let bomb = gameState.bombs.create(x, 16, 'bomb');
                     bomb.setBounce(1);
                     bomb.setCollideWorldBounds(true);
-                    bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+                    bomb.setVelocityX(120);
+                    bomb.setVelocityY(Phaser.Math.Between(-200, 200));
                 }
             }
 
-            // Display and remove pause screen
+             // Display and remove pause screen
             const togglePauseScreen = () => {
                 if (gameState.isPaused) {
                     gameState.pauseOverlay = this.add.rectangle(25, 90, 750, 400, 0xFFFFFF).setScrollFactor(0);
@@ -183,7 +184,7 @@ class GameScene extends Phaser.Scene
              // Toggle pause
              this.input.keyboard.on('keydown-ESC', () => {
                 togglePause();
-            })
+            })            
         }
 
         update () {
@@ -202,7 +203,7 @@ class GameScene extends Phaser.Scene
                     if (gameState.cursors.up.isDown || gameState.cursors.W.isDown) {
                         gameState.player.setVelocityY(-gameState.gameOptions.gravity / 1.25);
                     }
-                }                
-            }
+                }                                
+            }            
         }
     }
