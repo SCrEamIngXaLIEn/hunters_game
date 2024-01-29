@@ -22,10 +22,10 @@ class EndScene extends Phaser.Scene
             this.add.text(270, 370, `High Score: ${gameState.highScore}`, { font: '32px Cursive', fill: '#000' });
                     
             // Start new game
-            this.add.text(270, 550, '           Click to Play Again\nor press ESC for the main menu', { font: '16px Cursive', fill: '#000'});
+            this.add.text(270, 550, '           Click to Play Again\nor press ESC for the Main Menu', { font: '16px Cursive', fill: '#000'});
             this.input.on('pointerup', () => {
                 this.scene.stop('EndScene');
-                this.scene.start('GameScene');
+                this.scene.start('Level1');
             })
 
             // Return to start screen

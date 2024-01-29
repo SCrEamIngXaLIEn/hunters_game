@@ -17,7 +17,7 @@ const config = {
     type: Phaser.AUTO,
     width: gameState.gameOptions.width,
     height: gameState.gameOptions.height,
-    scene: [StartScene, GameScene, EndScene],    
+    scene: [StartScene, Level1, Level2, EndScene],
     physics: {
         default: 'arcade',
         arcade: {

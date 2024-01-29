@@ -1,8 +1,11 @@
 class GameScene extends Phaser.Scene
     {
-        constructor() {
-            super({ key: 'GameScene' });
-            this.heights = [14, null, 14, 17];        
+        constructor(key) {
+            super(key);
+            this.levelKey = key
+            this.nextLevel = {
+                'Level1': 'Level2'
+            }
         }
 
         preload () {
@@ -12,10 +15,10 @@ class GameScene extends Phaser.Scene
             this.load.spritesheet('player', 'assets/sprites/player.png', { frameWidth: 32, frameHeight: 48 });
         }
                              
-        create () {       
-                        
+        create () {
+            
             gameState.score = 0;
-                        
+            
             // Create background gradient
             const graphics = this.add.graphics();
             graphics.fillGradientStyle(0x169ac5, 0x169ac5, 0x9addf3, 0x9addf3, 1);
@@ -26,9 +29,9 @@ class GameScene extends Phaser.Scene
             gameState.player.setBounce(0.2);
             gameState.player.body.checkCollision.up = false;
 
-             // Create ground
-             const ground = this.physics.add.staticGroup();
-             ground.create(800, 1216, 'ground').setScale(4).refreshBody();
+            // Create ground
+            const ground = this.physics.add.staticGroup();
+            ground.create(800, 1216, 'ground').setScale(4).refreshBody();
 
             // Create platforms
             gameState.platforms = this.physics.add.staticGroup();
@@ -58,7 +61,7 @@ class GameScene extends Phaser.Scene
                 this.physics.pause();
                 player.setTint(0xff0000);
                 player.anims.play('turn');
-                this.scene.stop('GameScene');
+                this.scene.stop(this.levelKey);
                 this.scene.start('EndScene');                
             }
 
@@ -81,7 +84,7 @@ class GameScene extends Phaser.Scene
             this.physics.add.collider(gameState.bombs, ground);
             this.physics.add.collider(gameState.player, gameState.bombs, hitBomb, null, this);
                         
-            // Creates logic to set stars x velocity to 0
+            // Creates logic to set stars x velocity to 0 when landed
             function onGround() {
                 gameState.stars.children.iterate(child => {
                     if (child.body.touching.down) {
@@ -113,10 +116,9 @@ class GameScene extends Phaser.Scene
                     let x = (gameState.player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
 
                     let bomb = gameState.bombs.create(x, 16, 'bomb');
-                    bomb.setBounce(1);
+                    bomb.setBounce(1, 1);
                     bomb.setCollideWorldBounds(true);
-                    bomb.setVelocityX(120);
-                    bomb.setVelocityY(Phaser.Math.Between(-200, 200));
+                    bomb.setVelocity(120, 120);
                 }
             }
 
@@ -151,16 +153,17 @@ class GameScene extends Phaser.Scene
             }
 
             // Create keyboard keys for this scene
-             gameState.cursors = this.input.keyboard.createCursorKeys();
-             gameState.cursors.W = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-             gameState.cursors.A = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-             gameState.cursors.D = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-             gameState.cursors.SPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-             gameState.cursors.ESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
-            
-             // Toggle pause
-             this.input.keyboard.on('keydown-ESC', () => {
-                togglePause();
+            gameState.cursors = this.input.keyboard.createCursorKeys();
+            gameState.cursors.W = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+            gameState.cursors.A = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+            gameState.cursors.D = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+            gameState.cursors.SPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+            gameState.cursors.ESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+            gameState.cursors.SHIFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+
+            // Toggle pause
+            this.input.keyboard.on('keydown-ESC', () => {
+               togglePause();
             })            
         }
         
@@ -189,7 +192,7 @@ class GameScene extends Phaser.Scene
         // If either is not a number it won't make a platform
         createPlatform(xIndex, yIndex) {
             if (typeof yIndex === 'number' && typeof xIndex === 'number') {
-                gameState.platforms.create((220 * xIndex), yIndex * 70, 'ground').setOrigin(0, 0.5).refreshBody();
+                gameState.platforms.create((220 * xIndex), yIndex * 70, 'ground').setOrigin(0, 0.5).setScale(0.5).refreshBody();
             }
         }
 
@@ -215,7 +218,28 @@ class GameScene extends Phaser.Scene
                     if (gameState.cursors.up.isDown || gameState.cursors.W.isDown) {
                         gameState.player.setVelocityY(-gameState.gameOptions.gravity / 1.25);
                     }
-                }                             
+                    if (gameState.cursors.SHIFT.isDown) {
+                        gameState.speed = 320;
+                    } else {
+                        gameState.speed = 160;
+                    }
+                }                
             }            
         }
     }
+
+class Level1 extends GameScene
+    {
+        constructor() {
+            super('Level1');            
+            this.heights = [14, 12, 10, null, 10, 12, 14];
+        }
+    }
+
+class Level2 extends GameScene
+ {
+    constructor() {
+        super('Level2');
+        this.heights = [10, 12, 10, 14, 10, 12, 10];
+    }
+ }
