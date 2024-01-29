@@ -1,7 +1,8 @@
 class GameScene extends Phaser.Scene
     {
         constructor() {
-            super ({ key:'GameScene' });
+            super({ key: 'GameScene' });
+            this.heights = [14, null, 14, 17];        
         }
 
         preload () {
@@ -10,40 +11,11 @@ class GameScene extends Phaser.Scene
             this.load.image('bomb', 'assets/sprites/bomb.png');
             this.load.spritesheet('player', 'assets/sprites/player.png', { frameWidth: 32, frameHeight: 48 });
         }
-
-        // Creates platforms
-        createPlatform(xIndex, yIndex) {
-            if (typeof yIndex === 'number' && typeof xIndex === 'number') {
-                gameState.platforms.create((220 * xIndex), yIndex * 70, 'ground').setOrigin(0, 0.5).refreshBody();
-            }
-        }
-
-        // Create animations
-        createAnimations() {
-            this.anims.create({
-                key: 'left',
-                frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
-                frameRate: 10,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'right',
-                frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
-                frameRate: 10,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'turn',
-                frames: [ { key: 'player', frame: 4 } ],
-                frameRate: 20
-            });
-        }
-               
-        create () {
+                             
+        create () {       
+                        
             gameState.score = 0;
-
-            this.createAnimations();
-            
+                        
             // Create background gradient
             const graphics = this.add.graphics();
             graphics.fillGradientStyle(0x169ac5, 0x169ac5, 0x9addf3, 0x9addf3, 1);
@@ -59,15 +31,18 @@ class GameScene extends Phaser.Scene
              ground.create(800, 1216, 'ground').setScale(4).refreshBody();
 
             // Create platforms
-            gameState.platforms = this.physics.add.group();
+            gameState.platforms = this.physics.add.staticGroup();
+
+            this.createAnimations();
+
+            this.levelSetup();
 
             // Creates stars
             gameState.stars = this.physics.add.group({
                 key: 'star',
                 repeat: 11,
                 setXY: { x: 12, y: 0, stepX: 140 },
-            });            
-                        
+            });           
             gameState.stars.children.iterate(child => {
                 child.setBounceY(Phaser.Math.FloatBetween(0.2, 0.4));
                 child.setCollideWorldBounds(true);
@@ -102,6 +77,11 @@ class GameScene extends Phaser.Scene
             this.physics.add.collider(gameState.player, ground);
             this.physics.add.collider(gameState.stars, gameState.platforms);
             this.physics.add.collider(gameState.stars, ground, onGround, null, this);
+            this.physics.add.collider(gameState.bombs, gameState.platforms);
+            this.physics.add.collider(gameState.bombs, ground);
+            this.physics.add.collider(gameState.player, gameState.bombs, hitBomb, null, this);
+                        
+            // Creates logic to set stars x velocity to 0
             function onGround() {
                 gameState.stars.children.iterate(child => {
                     if (child.body.touching.down) {
@@ -109,10 +89,7 @@ class GameScene extends Phaser.Scene
                     }
                 })
             }
-            this.physics.add.collider(gameState.bombs, gameState.platforms);
-            this.physics.add.collider(gameState.bombs, ground);
-            this.physics.add.collider(gameState.player, gameState.bombs, hitBomb, null, this);
-                        
+            
             // Creates logic for player to collect stars when overlaping them
             this.physics.add.overlap(gameState.player, gameState.stars, collectStar, null, this);
             function collectStar (player, star) {
@@ -186,7 +163,42 @@ class GameScene extends Phaser.Scene
                 togglePause();
             })            
         }
+        
+        // Create animations
+        createAnimations() {
+            this.anims.create({
+                key: 'left',
+                frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
+                frameRate: 10,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'right',
+                frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
+                frameRate: 10,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'turn',
+                frames: [ { key: 'player', frame: 4 } ],
+                frameRate: 20
+            });
+        }
 
+        // Creates a platform evenly spaced along the two indices.
+        // If either is not a number it won't make a platform
+        createPlatform(xIndex, yIndex) {
+            if (typeof yIndex === 'number' && typeof xIndex === 'number') {
+                gameState.platforms.create((220 * xIndex), yIndex * 70, 'ground').setOrigin(0, 0.5).refreshBody();
+            }
+        }
+
+        levelSetup() {
+            for (const [xIndex, yIndex] of this.heights.entries()) {
+                this.createPlatform(xIndex, yIndex);
+            }
+        }
+                
         update () {
             if (gameState.isPaused === false) {
                 if (gameState.cursors.left.isDown || gameState.cursors.A.isDown) {
@@ -203,7 +215,7 @@ class GameScene extends Phaser.Scene
                     if (gameState.cursors.up.isDown || gameState.cursors.W.isDown) {
                         gameState.player.setVelocityY(-gameState.gameOptions.gravity / 1.25);
                     }
-                }                                
+                }                             
             }            
         }
     }

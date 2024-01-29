@@ -17,11 +17,12 @@ const config = {
     type: Phaser.AUTO,
     width: gameState.gameOptions.width,
     height: gameState.gameOptions.height,
-    scene: [StartScene, GameScene, EndScene],
+    scene: [StartScene, GameScene, EndScene],    
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: gameState.gameOptions.gravity }
+            gravity: { y: gameState.gameOptions.gravity },
+            enableBody: true
         }
     },
     title: 'Star Hunters',
