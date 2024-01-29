@@ -16,7 +16,6 @@ class GameScene extends Phaser.Scene
         }
                              
         create () {
-            
             gameState.score = 0;
             
             // Create background gradient
@@ -49,9 +48,6 @@ class GameScene extends Phaser.Scene
             gameState.stars.children.iterate(child => {
                 child.setBounceY(Phaser.Math.FloatBetween(0.2, 0.4));
                 child.setCollideWorldBounds(true);
-                if (!child.body.touching.down) {
-                    child.setVelocityX(60);
-                }
             });
 
             // Creates bombs
@@ -79,19 +75,10 @@ class GameScene extends Phaser.Scene
             this.physics.add.collider(gameState.player, gameState.platforms);
             this.physics.add.collider(gameState.player, ground);
             this.physics.add.collider(gameState.stars, gameState.platforms);
-            this.physics.add.collider(gameState.stars, ground, onGround, null, this);
+            this.physics.add.collider(gameState.stars, ground);
             this.physics.add.collider(gameState.bombs, gameState.platforms);
             this.physics.add.collider(gameState.bombs, ground);
-            this.physics.add.collider(gameState.player, gameState.bombs, hitBomb, null, this);
-                        
-            // Creates logic to set stars x velocity to 0 when landed
-            function onGround() {
-                gameState.stars.children.iterate(child => {
-                    if (child.body.touching.down) {
-                        child.setVelocityX(0);
-                    }
-                })
-            }
+            this.physics.add.collider(gameState.player, gameState.bombs, hitBomb, null, this);          
             
             // Creates logic for player to collect stars when overlaping them
             this.physics.add.overlap(gameState.player, gameState.stars, collectStar, null, this);
@@ -113,28 +100,13 @@ class GameScene extends Phaser.Scene
                     });
                 
                     // Creates a new bomb each time all the stars are collected
-                    let x = (gameState.player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+                    let x = (gameState.player.x < 800) ? Phaser.Math.Between(800, 1600) : Phaser.Math.Between(0, 800);
 
                     let bomb = gameState.bombs.create(x, 16, 'bomb');
                     bomb.setBounce(1, 1);
                     bomb.setCollideWorldBounds(true);
-                    bomb.setVelocity(120, 120);
-                }
-            }
-
-             // Display and remove pause screen
-            const togglePauseScreen = () => {
-                if (gameState.isPaused) {
-                    gameState.pauseOverlay = this.add.rectangle(25, 90, 750, 400, 0xFFFFFF).setScrollFactor(0);
-                    gameState.pauseOverlay.alpha = 0.75;
-                    gameState.pauseOverlay.setOrigin(0, 0);
-                    
-                    gameState.pauseOverlay.pauseText = this.add.text(320, 125, 'PAUSED', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0);
-                    gameState.pauseOverlay.resumeText = this.add.text(192, 425, 'Press ESC to resume game', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0);
-                } else {
-                    gameState.pauseOverlay.destroy();
-                    gameState.pauseOverlay.pauseText.destroy();
-                    gameState.pauseOverlay.resumeText.destroy();
+                    bomb.setVelocityX(120);
+                    bomb.setVelocityY(120);
                 }
             }
 
@@ -144,11 +116,11 @@ class GameScene extends Phaser.Scene
                     gameState.isPaused = true;
                     gameState.player.anims.play('turn');
                     this.physics.pause();
-                    togglePauseScreen();
+                    this.pauseScreen();
                 } else {
                     gameState.isPaused = false;
                     this.physics.resume();
-                    togglePauseScreen();
+                    this.pauseScreen();
                 }
             }
 
@@ -187,6 +159,21 @@ class GameScene extends Phaser.Scene
                 frameRate: 20
             });
         }
+        // Display and remove pause screen
+        pauseScreen () {
+               if (gameState.isPaused) {
+                    gameState.pauseOverlay = this.add.rectangle(25, 90, 750, 400, 0xFFFFFF).setScrollFactor(0);
+                    gameState.pauseOverlay.alpha = 0.75;
+                    gameState.pauseOverlay.setOrigin(0, 0);
+                    
+                    gameState.pauseOverlay.pauseText = this.add.text(320, 125, 'PAUSED', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0);
+                    gameState.pauseOverlay.resumeText = this.add.text(192, 425, 'Press ESC to resume game', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0);
+                } else {
+                    gameState.pauseOverlay.destroy();
+                    gameState.pauseOverlay.pauseText.destroy();
+                    gameState.pauseOverlay.resumeText.destroy();
+                }
+            }
 
         // Creates a platform evenly spaced along the two indices.
         // If either is not a number it won't make a platform
@@ -223,18 +210,28 @@ class GameScene extends Phaser.Scene
                     } else {
                         gameState.speed = 160;
                     }
-                }                
+                }
+                
+                // Changes level
+                if (gameState.score === 480) {
+                    this.cameras.main.fade(800, 0, 0, 0, false, function(camera, progress) {                        
+                        if (progress > .9) {
+                            this.scene.stop(this.levelKey);
+                            this.scene.start(this.nextLevel[this.levelKey]);                         
+                        }
+                    });
+                }
             }            
         }
     }
 
 class Level1 extends GameScene
-    {
-        constructor() {
-            super('Level1');            
-            this.heights = [14, 12, 10, null, 10, 12, 14];
-        }
+ {
+    constructor() {
+        super('Level1');            
+        this.heights = [14, 12, 10, null, 10, 12, 14];
     }
+ }
 
 class Level2 extends GameScene
  {
