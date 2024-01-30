@@ -24,7 +24,7 @@ class StartScene extends Phaser.Scene
             // Create ground
             const ground = this.physics.add.staticGroup();
             ground.create(400, 576, 'ground').setScale(2.5).refreshBody();
-
+            
             // Create Stars button
             const start = this.add.image(400, 365, 'start').setInteractive();
             
