@@ -28,7 +28,7 @@ class GameScene extends Phaser.Scene
             // Create player sprite
             gameState.player = this.physics.add.sprite(220, 1112, 'player');
             gameState.player.setBounce(0.2);
-            gameState.player.body.checkCollision.up = false;
+            // gameState.player.body.checkCollision.up = false;
 
             // Create ground
             const ground = this.physics.add.staticGroup();
@@ -105,10 +105,9 @@ class GameScene extends Phaser.Scene
                     let x = (gameState.player.x < 800) ? Phaser.Math.Between(800, 1600) : Phaser.Math.Between(0, 800);
 
                     let bomb = gameState.bombs.create(x, 16, 'bomb');
-                    bomb.setBounce(1, 1);
+                    bomb.setBounce(1);
                     bomb.setCollideWorldBounds(true);
-                    bomb.setVelocityX(120);
-                    bomb.setVelocityY(120);
+                    bomb.setVelocity(Phaser.Math.Between(-200, 200), Phaser.Math.Between(-200, 200));
                 }
             }
 
@@ -180,7 +179,7 @@ class GameScene extends Phaser.Scene
         // Creates a platform evenly spaced along the two indices.
         // If either is not a number it won't make a platform
         createPlatform(x, y) {
-            gameState.platforms.create((220 * x), y * 70, 'ground').setOrigin(0, 0.5).setScale(0.5).refreshBody();
+            gameState.platforms.create((233.5 * x), y * 70, 'ground').setOrigin(0, 0.5).setScale(0.5).refreshBody();
         }
 
         levelSetup() {
@@ -208,7 +207,7 @@ class GameScene extends Phaser.Scene
                     gameState.player.anims.play('turn');
                 }
                 if (gameState.player.body.touching.down){
-                    if (gameState.cursors.up.isDown || gameState.cursors.W.isDown) {
+                    if (gameState.cursors.up.isDown || gameState.cursors.W.isDown || gameState.cursors.SPACE.isDown) {
                         gameState.player.setVelocityY(-gameState.gameOptions.gravity / 1.25);
                     }
                     if (gameState.cursors.SHIFT.isDown) {
@@ -216,6 +215,13 @@ class GameScene extends Phaser.Scene
                     } else {
                         gameState.speed = 160;
                     }
+                }
+
+                // Disables collision with platforms when the plater is moving up
+                if (gameState.player.body.velocity.y < 0) {
+                    gameState.player.body.checkCollision.up = false;                    
+                } else {
+                    gameState.player.body.checkCollision.up = true;
                 }
                 
                 // Changes level based on player score
