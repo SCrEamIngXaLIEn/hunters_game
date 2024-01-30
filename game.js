@@ -10,14 +10,15 @@ const gameState = {
     speed: 160,
     highScore: 0,
     score: 0,
-    scoreText: ''
+    scoreText: '',
+    currentLevel: 0
 };
 
 const config = {
     type: Phaser.AUTO,
     width: gameState.gameOptions.width,
     height: gameState.gameOptions.height,
-    scene: [StartScene, Level1, Level2, EndScene],
+    scene: [StartScene, Level1, Level2, Level3, EndScene],
     physics: {
         default: 'arcade',
         arcade: {

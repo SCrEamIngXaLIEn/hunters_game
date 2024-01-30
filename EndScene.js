@@ -9,6 +9,9 @@ class EndScene extends Phaser.Scene
         }
 
         create  () {
+            // Resets current level to 0
+            gameState.currentLevel = 0;
+            
             // Create background gradient
             const graphics = this.add.graphics();
             graphics.fillGradientStyle(0x169ac5, 0x169ac5, 0x9addf3, 0x9addf3, 1);
@@ -24,12 +27,16 @@ class EndScene extends Phaser.Scene
             // Start new game
             this.add.text(270, 550, '           Click to Play Again\nor press ESC for the Main Menu', { font: '16px Cursive', fill: '#000'});
             this.input.on('pointerup', () => {
+                gameState.score = 0;                
+                this.data.set('score', gameState.score);
                 this.scene.stop('EndScene');
                 this.scene.start('Level1');
             })
 
             // Return to start screen
             this.input.keyboard.on('keydown-ESC', () => {
+                gameState.score = 0;
+                this.data.set('score', gameState.score);
                 this.scene.stop('EndScene');
                 this.scene.start('StartScene');
             })

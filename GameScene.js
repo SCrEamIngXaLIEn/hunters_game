@@ -4,8 +4,11 @@ class GameScene extends Phaser.Scene
             super(key);
             this.levelKey = key
             this.nextLevel = {
-                'Level1': 'Level2'
-            }
+                'Level1': 'Level2',
+                'Level2': 'Level3',
+                'Level3': 'EndScene'
+            };
+            this.data = { score: 0 };
         }
 
         preload () {
@@ -16,8 +19,7 @@ class GameScene extends Phaser.Scene
         }
                              
         create () {
-            gameState.score = 0;
-            
+
             // Create background gradient
             const graphics = this.add.graphics();
             graphics.fillGradientStyle(0x169ac5, 0x169ac5, 0x9addf3, 0x9addf3, 1);
@@ -62,7 +64,7 @@ class GameScene extends Phaser.Scene
             }
 
             // Creates score text
-            gameState.scoreText = this.add.text(16, 16, 'Score: 0', { font: '28px Cursive', fill: '#000' }).setScrollFactor(0);
+            gameState.scoreText = this.add.text(16, 16, `Score: ${gameState.score}`, { font: '28px Cursive', fill: '#000' }).setScrollFactor(0);
             gameState.highScoreText = this.add.text(16, 48, `High Score: ${gameState.highScore}`, { font: '28px Cursive', fill: '#000'}).setScrollFactor(0);
             
             // Set up cameras
@@ -177,16 +179,20 @@ class GameScene extends Phaser.Scene
 
         // Creates a platform evenly spaced along the two indices.
         // If either is not a number it won't make a platform
-        createPlatform(xIndex, yIndex) {
-            if (typeof yIndex === 'number' && typeof xIndex === 'number') {
-                gameState.platforms.create((220 * xIndex), yIndex * 70, 'ground').setOrigin(0, 0.5).setScale(0.5).refreshBody();
-            }
+        createPlatform(x, y) {
+            gameState.platforms.create((220 * x), y * 70, 'ground').setOrigin(0, 0.5).setScale(0.5).refreshBody();
         }
 
         levelSetup() {
-            for (const [xIndex, yIndex] of this.heights.entries()) {
-                this.createPlatform(xIndex, yIndex);
-            }
+            const platformPos = this.platformPos || [];
+            platformPos.forEach(pos => {
+                this.createPlatform(pos.x, pos.y);
+            })           
+        }
+
+        // Retrieves the score stored between each level
+        retrieveStoredScore() {
+            gameState.score = this.data.score || 0; // If no score is stored, default to 0
         }
                 
         update () {
@@ -212,10 +218,16 @@ class GameScene extends Phaser.Scene
                     }
                 }
                 
-                // Changes level
-                if (gameState.score === 480) {
+                // Changes level based on player score
+                const scoreMultiple = Math.floor(gameState.score / 480);
+                if (scoreMultiple > gameState.currentLevel) {
+                    gameState.currentLevel = scoreMultiple;
+                    
                     this.cameras.main.fade(800, 0, 0, 0, false, function(camera, progress) {                        
-                        if (progress > .9) {
+                        gameState.player.anims.play('turn');
+                        this.physics.pause();
+                        if (progress > .9) {                            
+                            this.data.set('score', gameState.score);
                             this.scene.stop(this.levelKey);
                             this.scene.start(this.nextLevel[this.levelKey]);                         
                         }
@@ -225,18 +237,54 @@ class GameScene extends Phaser.Scene
         }
     }
 
-class Level1 extends GameScene
- {
-    constructor() {
-        super('Level1');            
-        this.heights = [14, 12, 10, null, 10, 12, 14];
+class Level1 extends GameScene 
+    {
+        constructor() {
+            super('Level1');
+            this.platformPos = [
+                { x: 0, y: 14 },
+                { x: 1, y: 12 },
+                { x: 2, y: 10 },
+                { x: 4, y: 10 },
+                { x: 5, y: 12 },
+                { x: 6, y: 14 },
+            ];
+            this.retrieveStoredScore();
+        }   
+        
     }
- }
+    
+class Level2 extends GameScene 
+    {
+        constructor() {
+            super('Level2');
+            this.platformPos = [
+                { x: 0, y: 10 },
+                { x: 1, y: 12 },
+                { x: 2, y: 10 },
+                { x: 3, y: 14 },
+                { x: 4, y: 10 },
+                { x: 5, y: 12 },
+                { x: 6, y: 10 }
+            ];
+            this.retrieveStoredScore();
+        }
+    }
 
-class Level2 extends GameScene
- {
-    constructor() {
-        super('Level2');
-        this.heights = [10, 12, 10, 14, 10, 12, 10];
+class Level3 extends GameScene
+    {
+        constructor() {
+            super('Level3');
+            this.platformPos = [
+                { x: 1, y: 8 },
+                { x: 2, y: 4 },
+                { x: 3, y: 14 },
+                { x: 3, y: 12 },
+                { x: 3, y: 10 },
+                { x: 3, y: 6 },
+                { x: 4, y: 4 },
+                { x: 5, y: 8 }
+            ];
+            this.retrieveStoredScore();
+        }
     }
- }
