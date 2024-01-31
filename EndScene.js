@@ -19,7 +19,7 @@ class EndScene extends Phaser.Scene
             graphics.fillRect(0, 0, 800, 600);
 
             // Create world assets;
-            if (gameState.score < 1080) {
+            if (gameState.score < 1440) {
                 this.add.image(400, 200, 'gameOver');
             } else {
                 this.add.image(400, 200, 'youWin');

@@ -15,15 +15,17 @@ class GameScene extends Phaser.Scene
             this.load.image('ground', 'assets/sprites/platform.png');
             this.load.image('star', 'assets/sprites/star.png');
             this.load.image('bomb', 'assets/sprites/bomb.png');
+            this.load.image('clouds', 'assets/skies/clouds.png');
             this.load.spritesheet('player', 'assets/sprites/player.png', { frameWidth: 32, frameHeight: 48 });
         }
                              
         create () {
 
-            // Create background gradient
+            // Create backgrounds
             const graphics = this.add.graphics();
             graphics.fillGradientStyle(0x169ac5, 0x169ac5, 0x9addf3, 0x9addf3, 1);
             graphics.fillRect(0, 0, gameState.gameOptions.levelWidth, gameState.gameOptions.levelHeight);
+            this.createBackgrounds();
 
             // Create player sprite
             gameState.player = this.physics.add.sprite(220, 1112, 'player');
@@ -160,6 +162,7 @@ class GameScene extends Phaser.Scene
                 frameRate: 20
             });
         }
+
         // Display and remove pause screen
         pauseScreen () {
                if (gameState.isPaused) {
@@ -186,9 +189,17 @@ class GameScene extends Phaser.Scene
             }
 
         // Creates a platform evenly spaced along the two indices.
-        // If either is not a number it won't make a platform
         createPlatform(x, y) {
             gameState.platforms.create((233.5 * x), y * 70, 'ground').setOrigin(0, 0.5).setScale(0.5).refreshBody();
+        }
+
+        // Creates background layers
+        createBackgrounds() {
+            gameState.bg1 = this.add.image(0, 0, 'clouds').setOrigin(0, 0);
+
+            const bg1_width = gameState.bg1.getBounds().width;
+
+            gameState.bg1.setScrollFactor((bg1_width - config.width) / (gameState.gameOptions.levelWidth - config.width));
         }
 
         levelSetup() {
@@ -234,7 +245,7 @@ class GameScene extends Phaser.Scene
                 }
                 
                 // Changes level based on player score
-                const scoreMultiple = Math.floor(gameState.score / 360);
+                const scoreMultiple = Math.floor(gameState.score / 480);
                 if (scoreMultiple > gameState.currentLevel) {
                     gameState.currentLevel = scoreMultiple;
                     
