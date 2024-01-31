@@ -2350,3 +2350,5 @@ node_modules/phaser/types/SpineContainer.d.ts
 node_modules/phaser/types/SpineFile.d.ts
 node_modules/phaser/types/SpineGameObject.d.ts
 node_modules/phaser/types/SpinePlugin.d.ts
+hunters.zip
+.gitignore

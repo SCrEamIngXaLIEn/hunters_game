@@ -6,6 +6,7 @@ class EndScene extends Phaser.Scene
 
         preload () {
             this.load.image('gameOver', 'assets/gameover.png');
+            this.load.image('youWin', 'assets/youwin.png');
         }
 
         create  () {
@@ -18,7 +19,11 @@ class EndScene extends Phaser.Scene
             graphics.fillRect(0, 0, 800, 600);
 
             // Create world assets;
-            this.add.image(400, 200, 'gameOver');
+            if(gameState.score < 1080) {
+                this.add.image(400, 200, 'gameOver');
+            } else {
+                this.add.image(400, 200, 'youWin');
+            }
 
             // Show final score
             this.add.text(270, 330, `Final Score: ${gameState.score}`, { font: '32px Cursive', fill: '#000' });

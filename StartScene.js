@@ -12,7 +12,9 @@ class StartScene extends Phaser.Scene
         }
         
         create ()
-        {            
+        {
+            gameState.isPaused = false;
+            
             // Create background gradient
             const graphics = this.add.graphics();
             graphics.fillGradientStyle(0x169ac5, 0x169ac5, 0x9addf3, 0x9addf3, 1);

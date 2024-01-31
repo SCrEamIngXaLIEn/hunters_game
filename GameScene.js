@@ -168,10 +168,19 @@ class GameScene extends Phaser.Scene
                     gameState.pauseOverlay.setOrigin(0, 0);
                     
                     gameState.pauseOverlay.pauseText = this.add.text(320, 125, 'PAUSED', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0);
+                    gameState.pauseOverlay.menuText = this.add.text(320, 200, 'Main Menu', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setInteractive();
                     gameState.pauseOverlay.resumeText = this.add.text(192, 425, 'Press ESC to resume game', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0);
+                    
+                    gameState.pauseOverlay.menuText.on('pointerup', () => {
+                        this.physics.pause();
+                        gameState.player.anims.play('turn');
+                        this.scene.stop(this.levelKey);
+                        this.scene.start('StartScene'); 
+                    })
                 } else {
                     gameState.pauseOverlay.destroy();
                     gameState.pauseOverlay.pauseText.destroy();
+                    gameState.pauseOverlay.menuText.destroy();
                     gameState.pauseOverlay.resumeText.destroy();
                 }
             }
@@ -225,7 +234,7 @@ class GameScene extends Phaser.Scene
                 }
                 
                 // Changes level based on player score
-                const scoreMultiple = Math.floor(gameState.score / 480);
+                const scoreMultiple = Math.floor(gameState.score / 360);
                 if (scoreMultiple > gameState.currentLevel) {
                     gameState.currentLevel = scoreMultiple;
                     
