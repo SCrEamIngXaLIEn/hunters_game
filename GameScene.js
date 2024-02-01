@@ -105,11 +105,13 @@ class GameScene extends Phaser.Scene
                 
                     // Creates a new bomb each time all the stars are collected
                     let x = (gameState.player.x < 800) ? Phaser.Math.Between(800, 1600) : Phaser.Math.Between(0, 800);
+                    let y = Phaser.Math.Between(600, 16);
 
-                    let bomb = gameState.bombs.create(x, 16, 'bomb');
+                    let bomb = gameState.bombs.create(x, y, 'bomb');
                     bomb.setBounce(1);
                     bomb.setCollideWorldBounds(true);
-                    bomb.setVelocity(Phaser.Math.Between(-200, 200), Phaser.Math.Between(-200, 200));
+                    bomb.setVelocity(Phaser.Math.Between(-400, 400), Phaser.Math.Between(-400, 400));
+                    bomb.setGravity(0, -gameState.gameOptions.gravity);
                 }
             }
 
