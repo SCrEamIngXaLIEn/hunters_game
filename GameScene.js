@@ -24,19 +24,17 @@ class GameScene extends Phaser.Scene
         create () {
 
             // Create backgrounds
-            const graphics = this.add.graphics();
-            graphics.fillGradientStyle(0x169ac5, 0x169ac5, 0x9addf3, 0x9addf3, 1);
-            graphics.fillRect(0, 0, gameState.gameOptions.levelWidth, gameState.gameOptions.levelHeight);
+            gameState.bgColor = this.add.rectangle(0, 0, gameState.gameOptions.levelWidth, gameState.gameOptions.levelHeight, 0x00ffbb).setOrigin(0, 0);
             this.createBackgrounds();
 
             // Create player sprite
             gameState.player = this.physics.add.sprite(220, 1112, 'player');
             gameState.player.setBounce(0.2);
-            // gameState.player.body.checkCollision.up = false;
+            gameState.player.setScale(1.2);
 
             // Create ground
-            const ground = this.physics.add.staticGroup();
-            ground.create(800, 1216, 'ground').setScale(4).refreshBody();
+            gameState.ground = this.physics.add.staticGroup();
+            gameState.ground.create(800, 1216, 'ground').setScale(4).refreshBody();
 
             // Create platforms
             gameState.platforms = this.physics.add.staticGroup();
@@ -79,11 +77,11 @@ class GameScene extends Phaser.Scene
             // Colliders
             gameState.player.setCollideWorldBounds(true);
             this.physics.add.collider(gameState.player, gameState.platforms);
-            this.physics.add.collider(gameState.player, ground);
+            this.physics.add.collider(gameState.player, gameState.ground);
             this.physics.add.collider(gameState.stars, gameState.platforms);
-            this.physics.add.collider(gameState.stars, ground);
+            this.physics.add.collider(gameState.stars, gameState.ground);
             this.physics.add.collider(gameState.bombs, gameState.platforms);
-            this.physics.add.collider(gameState.bombs, ground);
+            this.physics.add.collider(gameState.bombs, gameState.ground);
             this.physics.add.collider(gameState.player, gameState.bombs, hitBomb, null, this);          
             
             // Creates logic for player to collect stars when overlaping them
@@ -208,7 +206,7 @@ class GameScene extends Phaser.Scene
             const bg1_width = gameState.bg1.getBounds().width;
             const bg2_width = gameState.bg2.getBounds().width;
             const bg3_width = gameState.bg3.getBounds().width;
-            
+                        
             gameState.bg1.setScrollFactor((bg1_width - config.width) / (levelWidth - config.width));
             gameState.bg2.setScrollFactor((bg2_width - config.width) / (levelWidth - config.width));
             gameState.bg3.setScrollFactor((bg3_width - config.width) / (levelWidth - config.width));
@@ -218,7 +216,9 @@ class GameScene extends Phaser.Scene
             const platformPos = this.platformPos || [];
             platformPos.forEach(pos => {
                 this.createPlatform(pos.x, pos.y);
-            })           
+            })
+
+            this.setWeather(this.weather);
         }
 
         // Retrieves the score stored between each level
@@ -273,6 +273,34 @@ class GameScene extends Phaser.Scene
                 }
             }            
         }
+
+        setWeather(weather) {
+            const weathers = {
+
+                'morning': {
+                    'color': 0xecdccc,
+                    'bgColor': 0xF8c3aC
+                },
+                'afternoon': {
+                    'color': 0xffffff,
+                    'bgColor': 0x0571FF
+                },
+                'night': 0x555555,
+                'bgColor': 0x000000
+            }
+            let { color, bgColor } = weathers[weather];
+            gameState.bg1.setTint(color);
+            gameState.bg2.setTint(color);
+            gameState.bg3.setTint(color);
+            gameState.bgColor.fillColor = bgColor;
+            gameState.player.setTint(color);
+            gameState.ground.setTint(color);
+            for (let platform of gameState.platforms.getChildren()) {
+                platform.setTint(color);
+            }
+
+            return;
+        }       
     }
 
 class Level1 extends GameScene 
@@ -287,7 +315,8 @@ class Level1 extends GameScene
                 { x: 5, y: 12 },
                 { x: 6, y: 14 },
             ];
-            this.retrieveStoredScore();
+            this.retrieveStoredScore();            
+            this.weather = 'morning';
         }   
         
     }
@@ -306,6 +335,7 @@ class Level2 extends GameScene
                 { x: 6, y: 10 }
             ];
             this.retrieveStoredScore();
+            this.weather = 'afternoon';          
         }
     }
 
@@ -314,15 +344,19 @@ class Level3 extends GameScene
         constructor() {
             super('Level3');
             this.platformPos = [
+                { x: 0, y: 12 },
                 { x: 1, y: 8 },
                 { x: 2, y: 4 },
-                { x: 3, y: 14 },
-                { x: 3, y: 12 },
+                { x: 2, y: 12 },
+                { x: 3, y: 14 },                
                 { x: 3, y: 10 },
                 { x: 3, y: 6 },
                 { x: 4, y: 4 },
-                { x: 5, y: 8 }
+                { x: 4, y: 12 },
+                { x: 5, y: 8 },
+                { x: 6, y: 12 }
             ];
             this.retrieveStoredScore();
+            this.weather = 'night';
         }
     }
