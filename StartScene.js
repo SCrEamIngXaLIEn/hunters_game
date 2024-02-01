@@ -30,12 +30,25 @@ class StartScene extends Phaser.Scene
             // Create Stars button
             const start = this.add.image(400, 365, 'start').setInteractive();
             
-            // Starts game            
-            start.on('pointerup', () => {
-                this.scene.stop('StartScene');
-                this.scene.start('Level1'); 
+            // Starts game
+            start.on('pointerdown', () => {
+                start.setScale(0.85);
+                start.on('pointerup', () => {
+                    this.scene.stop('StartScene');
+                    this.scene.start('Level1');
+                })
             })
 
+            // Sets tint of start button when pointer is hovering
+            this.input.setHitArea(start).on('gameobjectover', function(pointer, gameObject) {
+                gameObject.setTint(0xFFE948);
+                gameObject.setScale(1.1);
+            })
+            this.input.setHitArea(start).on('gameobjectout', function(pointer, gameObject) {
+                gameObject.clearTint();
+                gameObject.setScale(1);
+            })
+            
             // Game version text
             const versionText = this.add.text(25, 550, '', { font: '16px Cursive', fill: "#fff"});
             versionText.setText([

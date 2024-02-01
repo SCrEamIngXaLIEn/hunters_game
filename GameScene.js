@@ -141,7 +141,7 @@ class GameScene extends Phaser.Scene
             // Toggle pause
             this.input.keyboard.on('keydown-ESC', () => {
                togglePause();
-            })            
+            })
         }
         
         // Create animations
@@ -285,8 +285,10 @@ class GameScene extends Phaser.Scene
                     'color': 0xffffff,
                     'bgColor': 0x0571FF
                 },
-                'night': 0x555555,
-                'bgColor': 0x000000
+                'night': {
+                    'color': 0xccaacc,
+                    'bgColor': 0x18235C
+                }
             }
             let { color, bgColor } = weathers[weather];
             gameState.bg1.setTint(color);
