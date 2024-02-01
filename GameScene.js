@@ -15,7 +15,9 @@ class GameScene extends Phaser.Scene
             this.load.image('ground', 'assets/sprites/platform.png');
             this.load.image('star', 'assets/sprites/star.png');
             this.load.image('bomb', 'assets/sprites/bomb.png');
-            this.load.image('clouds', 'assets/skies/clouds.png');
+            this.load.image('clouds', 'assets/backgrounds/clouds.png');
+            this.load.image('hills', 'assets/backgrounds/hills.png');
+            this.load.image('mountains', 'assets/backgrounds/mountains.png');
             this.load.spritesheet('player', 'assets/sprites/player.png', { frameWidth: 32, frameHeight: 48 });
         }
                              
@@ -197,11 +199,19 @@ class GameScene extends Phaser.Scene
 
         // Creates background layers
         createBackgrounds() {
-            gameState.bg1 = this.add.image(0, 0, 'clouds').setOrigin(0, 0);
+            gameState.bg1 = this.add.image(0, 150, 'mountains').setOrigin(0, 0);
+            gameState.bg2 = this.add.image(0, 150, 'hills').setOrigin(0, 0);
+            gameState.bg3 = this.add.image(0, 0, 'clouds').setOrigin(0, 0);
+
+            const levelWidth = gameState.gameOptions.levelWidth;
 
             const bg1_width = gameState.bg1.getBounds().width;
-
-            gameState.bg1.setScrollFactor((bg1_width - config.width) / (gameState.gameOptions.levelWidth - config.width));
+            const bg2_width = gameState.bg2.getBounds().width;
+            const bg3_width = gameState.bg3.getBounds().width;
+            
+            gameState.bg1.setScrollFactor((bg1_width - config.width) / (levelWidth - config.width));
+            gameState.bg2.setScrollFactor((bg2_width - config.width) / (levelWidth - config.width));
+            gameState.bg3.setScrollFactor((bg3_width - config.width) / (levelWidth - config.width));
         }
 
         levelSetup() {

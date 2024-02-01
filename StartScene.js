@@ -9,7 +9,6 @@ class StartScene extends Phaser.Scene
             this.load.image('title', 'assets/title.png');
             this.load.image('ground', 'assets/sprites/platform.png');
             this.load.image('start', 'assets/start.png');
-            this.load.image('clouds', 'assets/skies/clouds.png');
         }
         
         create ()
@@ -20,9 +19,6 @@ class StartScene extends Phaser.Scene
             const graphics = this.add.graphics();
             graphics.fillGradientStyle(0x169ac5, 0x169ac5, 0x9addf3, 0x9addf3, 1);
             graphics.fillRect(0, 0, 800, 600);
-
-            // Create clouds
-            this.add.image(0, 0, 'clouds');
 
             // Create title screen images
             this.add.image(400, 175, 'title');
