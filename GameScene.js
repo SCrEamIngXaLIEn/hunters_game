@@ -22,6 +22,10 @@ class GameScene extends Phaser.Scene
         }
                              
         create () {
+            gameState.isPaused = false;
+
+            gameState.centerX = gameState.gameOptions.width / 2;
+            gameState.centerY = gameState.gameOptions.height / 2;
 
             // Create backgrounds
             gameState.bgColor = this.add.rectangle(0, 0, gameState.gameOptions.levelWidth, gameState.gameOptions.levelHeight, 0x00ffbb).setOrigin(0, 0);
@@ -168,20 +172,31 @@ class GameScene extends Phaser.Scene
         // Display and remove pause screen
         pauseScreen () {
                if (gameState.isPaused) {
-                    gameState.pauseOverlay = this.add.rectangle(25, 90, 750, 400, 0xFFFFFF).setScrollFactor(0);
+                    gameState.pauseOverlay = this.add.rectangle(gameState.centerX, gameState.centerY, 750, 400, 0xFFFFFF).setScrollFactor(0);
                     gameState.pauseOverlay.alpha = 0.75;
-                    gameState.pauseOverlay.setOrigin(0, 0);
+                    gameState.pauseOverlay.setOrigin(0.5, 0.5);
                     
-                    gameState.pauseOverlay.pauseText = this.add.text(320, 125, 'PAUSED', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0);
-                    gameState.pauseOverlay.menuText = this.add.text(320, 200, 'Main Menu', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setInteractive();
-                    gameState.pauseOverlay.resumeText = this.add.text(192, 425, 'Press ESC to resume game', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0);
+                    gameState.pauseOverlay.pauseText = this.add.text(gameState.centerX, 125, 'PAUSED', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setOrigin(0.5);
+                    gameState.pauseOverlay.menuText = this.add.text(gameState.centerX, 200, 'Main Menu', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setOrigin(0.5).setInteractive();
+                    gameState.pauseOverlay.resumeText = this.add.text(gameState.centerX, 470, 'Press ESC to resume game', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setOrigin(0.5);
                     
-                    gameState.pauseOverlay.menuText.on('pointerup', () => {
-                        this.physics.pause();
-                        gameState.player.anims.play('turn');
-                        this.scene.stop(this.levelKey);
-                        this.scene.start('StartScene'); 
+                    gameState.pauseOverlay.menuText.on('pointerdown', () => {
+                        gameState.pauseOverlay.menuText.setScale(0.85);
+                        gameState.pauseOverlay.menuText.on('pointerup', () => {
+                            this.physics.pause();
+                            gameState.player.anims.play('turn');
+                            this.scene.stop(this.levelKey);
+                            this.scene.start('StartScene'); 
+                        })
                     })
+
+                    this.input.setHitArea(gameState.pauseOverlay.menuText).on('gameobjectover', function(pointer, gameObject) {
+                        gameObject.setScale(1.1);
+                    })
+                    this.input.setHitArea(gameState.pauseOverlay.menuText).on('gameobjectout', function(pointer, gameObject) {
+                        gameObject.setScale(1);
+                    })
+
                 } else {
                     gameState.pauseOverlay.destroy();
                     gameState.pauseOverlay.pauseText.destroy();
@@ -200,7 +215,7 @@ class GameScene extends Phaser.Scene
             gameState.bg1 = this.add.image(0, 150, 'mountains').setOrigin(0, 0);
             gameState.bg2 = this.add.image(0, 150, 'hills').setOrigin(0, 0);
             gameState.bg3 = this.add.image(0, 0, 'clouds').setOrigin(0, 0);
-
+            
             const levelWidth = gameState.gameOptions.levelWidth;
 
             const bg1_width = gameState.bg1.getBounds().width;

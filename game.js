@@ -14,11 +14,13 @@ const gameState = {
     currentLevel: 0
 };
 
+const buttons = {}
+
 const config = {
     type: Phaser.AUTO,
     width: gameState.gameOptions.width,
     height: gameState.gameOptions.height,
-    scene: [StartScene, Level1, Level2, Level3, EndScene],
+    scene: [StartScene, Controls, Level1, Level2, Level3, EndScene],
     physics: {
         default: 'arcade',
         arcade: {
