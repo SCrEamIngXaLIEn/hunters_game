@@ -18,6 +18,7 @@ class GameScene extends Phaser.Scene
             this.load.image('clouds', 'assets/backgrounds/clouds.png');
             this.load.image('hills', 'assets/backgrounds/hills.png');
             this.load.image('mountains', 'assets/backgrounds/mountains.png');
+            this.load.image('controls', 'assets/controls.png');
             this.load.spritesheet('player', 'assets/sprites/player.png', { frameWidth: 32, frameHeight: 48 });
         }
                              
@@ -177,7 +178,8 @@ class GameScene extends Phaser.Scene
                     gameState.pauseOverlay.setOrigin(0.5, 0.5);
                     
                     gameState.pauseOverlay.pauseText = this.add.text(gameState.centerX, 125, 'PAUSED', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setOrigin(0.5);
-                    gameState.pauseOverlay.menuText = this.add.text(gameState.centerX, 200, 'Main Menu', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setOrigin(0.5).setInteractive();
+                    gameState.pauseOverlay.menuText = this.add.text(gameState.centerX, 175, 'Main Menu', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setOrigin(0.5).setInteractive();
+                    gameState.pauseOverlay.controls = this.add.image(gameState.centerX, gameState.centerY + 17, 'controls').setOrigin(0.5, 0.5).setScrollFactor(0).setScale(0.75);
                     gameState.pauseOverlay.resumeText = this.add.text(gameState.centerX, 470, 'Press ESC to resume game', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setOrigin(0.5);
                     
                     gameState.pauseOverlay.menuText.on('pointerdown', () => {
@@ -201,6 +203,7 @@ class GameScene extends Phaser.Scene
                     gameState.pauseOverlay.destroy();
                     gameState.pauseOverlay.pauseText.destroy();
                     gameState.pauseOverlay.menuText.destroy();
+                    gameState.pauseOverlay.controls.destroy();
                     gameState.pauseOverlay.resumeText.destroy();
                 }
             }

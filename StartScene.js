@@ -79,6 +79,10 @@ class Controls extends Phaser.Scene
             super({ key: 'Controls' });
         }
 
+        preload() {
+            this.load.image('controls', 'assets/controls.png');
+        }
+
         create() {
             gameState.isPaused = false;
                         
@@ -90,6 +94,8 @@ class Controls extends Phaser.Scene
             gameState.displayBox = this.add.rectangle(config.width / 2, config.height / 2, 750, 400, 0xFFFFFF);
                     gameState.displayBox.alpha = 0.75;
                     gameState.displayBox.setOrigin(0.5, 0.5);
+
+            this.add.image(config.width / 2, config.height / 2 - 20, 'controls').setOrigin(0.5, 0.5);
 
             // Creates Controls button
             buttons.main = this.add.text(120, 470, 'Back', { font: '32px Cursive', fill: '#000' }).setOrigin(0.5, 0.5);                        
