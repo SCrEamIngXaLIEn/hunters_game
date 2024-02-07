@@ -1,3 +1,48 @@
+// Utility function that stops stars from moving 
+// in the X direction upon landing
+function stopStarsX(star, ground) {
+    star.setVelocityX(0);
+}
+
+// Utility function to toggle pause screen
+function togglePause() {
+    if (gameState.isPaused === false) {
+        gameState.isPaused = true;
+        gameState.player.anims.play('turn');
+        this.physics.pause();
+        this.pauseScreen();
+    } else {
+        gameState.isPaused = false;
+        this.physics.resume();
+        this.pauseScreen();
+    }
+}
+
+// Utility function to create platforms
+function createPlatform(scene, x, y) {
+    let platform = gameState.platforms.create((233.5 * x), y * 70, 'ground').setOrigin(0, 0.5).setScale(0.5).refreshBody();
+    platform.setPipeline('Light2D');
+}
+
+// Utility function to set weather
+function setWeather(scene, weather) {
+    const weathers = {
+        'morning': { 'color': 0xecdccc, 'bgColor': 0xF8c3aC },
+        'afternoon': { 'color': 0xffffff, 'bgColor': 0x0571FF },
+        'night': { 'color': 0xccaacc, 'bgColor': 0x18235C }
+    };
+    let { color, bgColor } = weathers[weather];
+    gameState.bg1.setTint(color);
+    gameState.bg2.setTint(color);
+    gameState.bg3.setTint(color);
+    gameState.bgColor.fillColor = bgColor;
+    gameState.player.setTint(color);
+    gameState.ground.setTint(color);
+    for (let platform of gameState.platforms.getChildren()) {
+        platform.setTint(color);
+    }
+}
+
 class GameScene extends Phaser.Scene
     {
         constructor(key) {
@@ -23,12 +68,10 @@ class GameScene extends Phaser.Scene
         }
                              
         create () {
-
+                        
             // Enable lights and set ambient color
-            this.lights.enable();
-            
+            this.lights.enable();            
             this.lights.setAmbientColor(0xffffff);
-            gameState.light = 
             
             gameState.isPaused = false;
 
@@ -64,21 +107,14 @@ class GameScene extends Phaser.Scene
                 setXY: { x: 12, y: 0, stepX: 140 },
             });           
             gameState.stars.children.iterate(child => {
+                child.setVelocityX(25);
                 child.setBounceY(Phaser.Math.FloatBetween(0.2, 0.4));
                 child.setCollideWorldBounds(true);
             });
 
             // Creates bombs
             gameState.bombs = this.physics.add.group();
-            // Logic for what happens when a bomb hits the player
-            function hitBomb (player, bomb) {
-                this.physics.pause();
-                player.setTint(0xff0000);
-                player.anims.play('turn');
-                this.scene.stop(this.levelKey);
-                this.scene.start('EndScene');
-            }
-
+            
             // Creates score text
             gameState.scoreText = this.add.text(16, 16, `Score: ${gameState.score}`, { font: '28px Cursive', fill: '#000' }).setScrollFactor(0);
             gameState.highScoreText = this.add.text(16, 48, `High Score: ${gameState.highScore}`, { font: '28px Cursive', fill: '#000'}).setScrollFactor(0);
@@ -92,16 +128,114 @@ class GameScene extends Phaser.Scene
             gameState.player.setCollideWorldBounds(true);
             this.physics.add.collider(gameState.player, gameState.platforms);
             this.physics.add.collider(gameState.player, gameState.ground);
-            this.physics.add.collider(gameState.stars, gameState.platforms);
-            this.physics.add.collider(gameState.stars, gameState.ground);
+            this.physics.add.collider(gameState.stars, gameState.platforms, stopStarsX, null, this);
+            this.physics.add.collider(gameState.stars, gameState.ground, stopStarsX, null, this);
             this.physics.add.collider(gameState.bombs, gameState.platforms);
             this.physics.add.collider(gameState.bombs, gameState.ground);
-            this.physics.add.collider(gameState.player, gameState.bombs, hitBomb, null, this);          
+
+            // Logic for handling when player collides with stars or bombs
+            this.physics.add.collider(gameState.player, gameState.bombs, this.handleStarAndBomb, null, this);
+            this.physics.add.overlap(gameState.player, gameState.stars, this.handleStarAndBomb, null, this);
+                        
+            // Create keyboard keys for this scene
+            gameState.cursors = this.input.keyboard.createCursorKeys();
+            gameState.cursors.W = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+            gameState.cursors.A = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+            gameState.cursors.D = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+            gameState.cursors.SPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+            gameState.cursors.ESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+            gameState.cursors.SHIFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+
+            // Toggle pause
+            this.input.keyboard.on('keydown-ESC', () => {
+               togglePause();
+            })            
+        }
+        
+        // Create animations
+        createAnimations() {
+            this.anims.create({
+                key: 'left',
+                frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
+                frameRate: 10,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'right',
+                frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
+                frameRate: 10,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'turn',
+                frames: [ { key: 'player', frame: 4 } ],
+                frameRate: 20
+            });
+        }
+                        
+        // Creates background layers
+        createBackgrounds() {
+            gameState.bg1 = this.add.image(0, 150, 'mountains').setOrigin(0, 0);
+            gameState.bg2 = this.add.image(0, 150, 'hills').setOrigin(0, 0);
+            gameState.bg3 = this.add.image(0, 0, 'clouds').setOrigin(0, 0);
             
-            // Creates logic for player to collect stars when overlaping them
-            this.physics.add.overlap(gameState.player, gameState.stars, collectStar, null, this);
-            function collectStar (player, star) {
-                star.disableBody(true, true);
+            const levelWidth = gameState.gameOptions.levelWidth;
+
+            const bg1_width = gameState.bg1.getBounds().width;
+            const bg2_width = gameState.bg2.getBounds().width;
+            const bg3_width = gameState.bg3.getBounds().width;
+                        
+            gameState.bg1.setScrollFactor((bg1_width - config.width) / (levelWidth - config.width));
+            gameState.bg2.setScrollFactor((bg2_width - config.width) / (levelWidth - config.width));
+            gameState.bg3.setScrollFactor((bg3_width - config.width) / (levelWidth - config.width));
+
+            gameState.bg1.setPipeline('Light2D');
+            gameState.bg2.setPipeline('Light2D');
+            gameState.bg3.setPipeline('Light2D');
+        }
+
+        // Display and remove pause screen
+        pauseScreen () {
+            if (gameState.isPaused) {
+                 gameState.pauseOverlay = this.add.rectangle(gameState.centerX, gameState.centerY, 750, 400, 0xFFFFFF).setScrollFactor(0);
+                 gameState.pauseOverlay.alpha = 0.75;
+                 gameState.pauseOverlay.setOrigin(0.5, 0.5);
+                 
+                 gameState.pauseOverlay.pauseText = this.add.text(gameState.centerX, 125, 'PAUSED', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setOrigin(0.5);
+                 gameState.pauseOverlay.menuText = this.add.text(gameState.centerX, 175, 'Main Menu', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setOrigin(0.5).setInteractive();
+                 gameState.pauseOverlay.controls = this.add.image(gameState.centerX, gameState.centerY + 17, 'controls').setOrigin(0.5, 0.5).setScrollFactor(0).setScale(0.75);
+                 gameState.pauseOverlay.resumeText = this.add.text(gameState.centerX, 470, 'Press ESC to resume game', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setOrigin(0.5);
+                 
+                 gameState.pauseOverlay.menuText.on('pointerdown', () => {
+                     gameState.pauseOverlay.menuText.setScale(0.85);
+                     gameState.pauseOverlay.menuText.on('pointerup', () => {
+                         this.physics.pause();
+                         gameState.player.anims.play('turn');
+                         this.scene.stop(this.levelKey);
+                         this.scene.start('StartScene'); 
+                     })
+                 })
+
+                 this.input.setHitArea(gameState.pauseOverlay.menuText).on('gameobjectover', function(pointer, gameObject) {
+                     gameObject.setScale(1.1);
+                 })
+                 this.input.setHitArea(gameState.pauseOverlay.menuText).on('gameobjectout', function(pointer, gameObject) {
+                     gameObject.setScale(1);
+                 })
+
+             } else {
+                 gameState.pauseOverlay.destroy();
+                 gameState.pauseOverlay.pauseText.destroy();
+                 gameState.pauseOverlay.menuText.destroy();
+                 gameState.pauseOverlay.controls.destroy();
+                 gameState.pauseOverlay.resumeText.destroy();
+             }
+         }
+
+        // Logic for player interacting with stars and bombs
+        handleStarAndBomb(player, item) {
+            if (item.texture.key === 'star') {
+                item.disableBody(true, true);
 
                 // Adds to score when a star is collected
                 gameState.score += 10;
@@ -130,128 +264,22 @@ class GameScene extends Phaser.Scene
                 }
             }
 
-            // Toggle pause function
-            const togglePause = () => {
-                if (gameState.isPaused === false) {
-                    gameState.isPaused = true;
-                    gameState.player.anims.play('turn');
-                    this.physics.pause();
-                    this.pauseScreen();
-                } else {
-                    gameState.isPaused = false;
-                    this.physics.resume();
-                    this.pauseScreen();
-                }
+            if (item.texture.key === 'bomb') {
+                this.physics.pause();
+                player.setTint(0xff0000);
+                player.anims.play('turn');
+                this.scene.stop(this.levelKey);
+                this.scene.start('EndScene');
             }
-
-            // Create keyboard keys for this scene
-            gameState.cursors = this.input.keyboard.createCursorKeys();
-            gameState.cursors.W = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-            gameState.cursors.A = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-            gameState.cursors.D = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-            gameState.cursors.SPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-            gameState.cursors.ESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
-            gameState.cursors.SHIFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
-
-            // Toggle pause
-            this.input.keyboard.on('keydown-ESC', () => {
-               togglePause();
-            })
-        }
-        
-        // Create animations
-        createAnimations() {
-            this.anims.create({
-                key: 'left',
-                frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
-                frameRate: 10,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'right',
-                frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
-                frameRate: 10,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'turn',
-                frames: [ { key: 'player', frame: 4 } ],
-                frameRate: 20
-            });
         }
 
-        // Display and remove pause screen
-        pauseScreen () {
-               if (gameState.isPaused) {
-                    gameState.pauseOverlay = this.add.rectangle(gameState.centerX, gameState.centerY, 750, 400, 0xFFFFFF).setScrollFactor(0);
-                    gameState.pauseOverlay.alpha = 0.75;
-                    gameState.pauseOverlay.setOrigin(0.5, 0.5);
-                    
-                    gameState.pauseOverlay.pauseText = this.add.text(gameState.centerX, 125, 'PAUSED', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setOrigin(0.5);
-                    gameState.pauseOverlay.menuText = this.add.text(gameState.centerX, 175, 'Main Menu', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setOrigin(0.5).setInteractive();
-                    gameState.pauseOverlay.controls = this.add.image(gameState.centerX, gameState.centerY + 17, 'controls').setOrigin(0.5, 0.5).setScrollFactor(0).setScale(0.75);
-                    gameState.pauseOverlay.resumeText = this.add.text(gameState.centerX, 470, 'Press ESC to resume game', { font: '32px Cursive', fill: '#000' }).setScrollFactor(0).setOrigin(0.5);
-                    
-                    gameState.pauseOverlay.menuText.on('pointerdown', () => {
-                        gameState.pauseOverlay.menuText.setScale(0.85);
-                        gameState.pauseOverlay.menuText.on('pointerup', () => {
-                            this.physics.pause();
-                            gameState.player.anims.play('turn');
-                            this.scene.stop(this.levelKey);
-                            this.scene.start('StartScene'); 
-                        })
-                    })
-
-                    this.input.setHitArea(gameState.pauseOverlay.menuText).on('gameobjectover', function(pointer, gameObject) {
-                        gameObject.setScale(1.1);
-                    })
-                    this.input.setHitArea(gameState.pauseOverlay.menuText).on('gameobjectout', function(pointer, gameObject) {
-                        gameObject.setScale(1);
-                    })
-
-                } else {
-                    gameState.pauseOverlay.destroy();
-                    gameState.pauseOverlay.pauseText.destroy();
-                    gameState.pauseOverlay.menuText.destroy();
-                    gameState.pauseOverlay.controls.destroy();
-                    gameState.pauseOverlay.resumeText.destroy();
-                }
-            }
-
-        // Creates a platform evenly spaced along the two indices.
-        createPlatform(x, y) {
-            let platform = gameState.platforms.create((233.5 * x), y * 70, 'ground').setOrigin(0, 0.5).setScale(0.5).refreshBody();
-            platform.setPipeline('Light2D');
-        }
-
-        // Creates background layers
-        createBackgrounds() {
-            gameState.bg1 = this.add.image(0, 150, 'mountains').setOrigin(0, 0);
-            gameState.bg2 = this.add.image(0, 150, 'hills').setOrigin(0, 0);
-            gameState.bg3 = this.add.image(0, 0, 'clouds').setOrigin(0, 0);
-            
-            const levelWidth = gameState.gameOptions.levelWidth;
-
-            const bg1_width = gameState.bg1.getBounds().width;
-            const bg2_width = gameState.bg2.getBounds().width;
-            const bg3_width = gameState.bg3.getBounds().width;
-                        
-            gameState.bg1.setScrollFactor((bg1_width - config.width) / (levelWidth - config.width));
-            gameState.bg2.setScrollFactor((bg2_width - config.width) / (levelWidth - config.width));
-            gameState.bg3.setScrollFactor((bg3_width - config.width) / (levelWidth - config.width));
-
-            gameState.bg1.setPipeline('Light2D');
-            gameState.bg2.setPipeline('Light2D');
-            gameState.bg3.setPipeline('Light2D');
-        }
-
-        levelSetup() {
+        levelSetup(weather = 'morning') {
             const platformPos = this.platformPos || [];
             platformPos.forEach(pos => {
-                this.createPlatform(pos.x, pos.y);
-            })
-
-            this.setWeather(this.weather);
+                this.createPlatform = createPlatform(this, pos.x, pos.y);
+            });
+        
+            setWeather(this, weather);
         }
 
         // Retrieves the score stored between each level
@@ -290,7 +318,7 @@ class GameScene extends Phaser.Scene
                 }
                 
                 // Changes level based on player score
-                const scoreMultiple = Math.floor(gameState.score / 20);
+                const scoreMultiple = Math.floor(gameState.score / 480);
                 if (scoreMultiple > gameState.currentLevel) {
                     gameState.currentLevel = scoreMultiple;
                     
@@ -307,41 +335,10 @@ class GameScene extends Phaser.Scene
             } 
             gameState.playerLight.x = gameState.player.x;
             gameState.playerLight.y = gameState.player.y;
-        }
-
-        setWeather(weather) {
-            const weathers = {
-
-                'morning': {
-                    'color': 0xecdccc,
-                    'bgColor': 0xF8c3aC
-                },
-                'afternoon': {
-                    'color': 0xffffff,
-                    'bgColor': 0x0571FF
-                },
-                'night': {
-                    'color': 0xccaacc,
-                    'bgColor': 0x18235C
-                }
-            }
-            let { color, bgColor } = weathers[weather];
-            gameState.bg1.setTint(color);
-            gameState.bg2.setTint(color);
-            gameState.bg3.setTint(color);
-            gameState.bgColor.fillColor = bgColor;
-            gameState.player.setTint(color);
-            gameState.ground.setTint(color);
-            for (let platform of gameState.platforms.getChildren()) {
-                platform.setTint(color);
-            }
-
-            return;
-        }       
+        }        
     }
 
-class Level1 extends GameScene 
-    {
+    class Level1 extends GameScene {
         constructor() {
             super('Level1');
             this.platformPos = [
@@ -352,8 +349,13 @@ class Level1 extends GameScene
                 { x: 5, y: 12 },
                 { x: 6, y: 14 },
             ];
-            this.retrieveStoredScore();            
+            this.retrieveStoredScore();
             this.weather = 'morning';
+        }
+    
+        create() {
+            super.create();
+            this.levelSetup(this.weather);
         }
     }
     
@@ -376,7 +378,7 @@ class Level2 extends GameScene
 
         create() {
             super.create();
-
+            this.levelSetup(this.weather);
             gameState.playerLight.setVisible(false);
         }
     }
@@ -400,5 +402,11 @@ class Level3 extends GameScene
             ];
             this.retrieveStoredScore();
             this.weather = 'night';                        
-        }        
+        }
+
+        create() {
+            super.create();
+            this.levelSetup(this.weather);
+            gameState.playerLight.setIntensity(1);
+        }
     }
