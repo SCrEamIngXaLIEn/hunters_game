@@ -29,7 +29,7 @@ const config = {
         }
     },
     title: 'Star Hunters',
-    version: '0.1.0-a'
+    version: '0.1.1-a'
 };
 
 const game = new Phaser.Game(config);
