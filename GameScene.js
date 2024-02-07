@@ -23,6 +23,13 @@ class GameScene extends Phaser.Scene
         }
                              
         create () {
+
+            // Enable lights and set ambient color
+            this.lights.enable();
+            
+            this.lights.setAmbientColor(0xffffff);
+            gameState.light = 
+            
             gameState.isPaused = false;
 
             gameState.centerX = gameState.gameOptions.width / 2;
@@ -30,16 +37,18 @@ class GameScene extends Phaser.Scene
 
             // Create backgrounds
             gameState.bgColor = this.add.rectangle(0, 0, gameState.gameOptions.levelWidth, gameState.gameOptions.levelHeight, 0x00ffbb).setOrigin(0, 0);
+            gameState.bgColor.setPipeline('Light2D');
             this.createBackgrounds();
 
             // Create player sprite
-            gameState.player = this.physics.add.sprite(220, 1112, 'player');
+            gameState.player = this.physics.add.sprite(220, 1112, 'player').setPipeline('Light2D');
             gameState.player.setBounce(0.2);
-            gameState.player.setScale(1.2);
-
+            gameState.player.setScale(1.2);            
+            gameState.playerLight = this.lights.addLight(0, 0, 100, 0xfff5be, 0.5);
+                        
             // Create ground
             gameState.ground = this.physics.add.staticGroup();
-            gameState.ground.create(800, 1216, 'ground').setScale(4).refreshBody();
+            gameState.ground.create(800, 1216, 'ground').setScale(4).refreshBody().setPipeline('Light2D');
 
             // Create platforms
             gameState.platforms = this.physics.add.staticGroup();
@@ -67,7 +76,7 @@ class GameScene extends Phaser.Scene
                 player.setTint(0xff0000);
                 player.anims.play('turn');
                 this.scene.stop(this.levelKey);
-                this.scene.start('EndScene');                
+                this.scene.start('EndScene');
             }
 
             // Creates score text
@@ -117,6 +126,7 @@ class GameScene extends Phaser.Scene
                     bomb.setCollideWorldBounds(true);
                     bomb.setVelocity(Phaser.Math.Between(-400, 400), Phaser.Math.Between(-400, 400));
                     bomb.setGravity(0, -gameState.gameOptions.gravity);
+                    bomb.setPipeline('Light2D');
                 }
             }
 
@@ -210,7 +220,8 @@ class GameScene extends Phaser.Scene
 
         // Creates a platform evenly spaced along the two indices.
         createPlatform(x, y) {
-            gameState.platforms.create((233.5 * x), y * 70, 'ground').setOrigin(0, 0.5).setScale(0.5).refreshBody();
+            let platform = gameState.platforms.create((233.5 * x), y * 70, 'ground').setOrigin(0, 0.5).setScale(0.5).refreshBody();
+            platform.setPipeline('Light2D');
         }
 
         // Creates background layers
@@ -228,6 +239,10 @@ class GameScene extends Phaser.Scene
             gameState.bg1.setScrollFactor((bg1_width - config.width) / (levelWidth - config.width));
             gameState.bg2.setScrollFactor((bg2_width - config.width) / (levelWidth - config.width));
             gameState.bg3.setScrollFactor((bg3_width - config.width) / (levelWidth - config.width));
+
+            gameState.bg1.setPipeline('Light2D');
+            gameState.bg2.setPipeline('Light2D');
+            gameState.bg3.setPipeline('Light2D');
         }
 
         levelSetup() {
@@ -275,7 +290,7 @@ class GameScene extends Phaser.Scene
                 }
                 
                 // Changes level based on player score
-                const scoreMultiple = Math.floor(gameState.score / 480);
+                const scoreMultiple = Math.floor(gameState.score / 20);
                 if (scoreMultiple > gameState.currentLevel) {
                     gameState.currentLevel = scoreMultiple;
                     
@@ -289,7 +304,9 @@ class GameScene extends Phaser.Scene
                         }
                     });
                 }
-            }            
+            } 
+            gameState.playerLight.x = gameState.player.x;
+            gameState.playerLight.y = gameState.player.y;
         }
 
         setWeather(weather) {
@@ -337,8 +354,7 @@ class Level1 extends GameScene
             ];
             this.retrieveStoredScore();            
             this.weather = 'morning';
-        }   
-        
+        }
     }
     
 class Level2 extends GameScene 
@@ -356,6 +372,12 @@ class Level2 extends GameScene
             ];
             this.retrieveStoredScore();
             this.weather = 'afternoon';          
+        }
+
+        create() {
+            super.create();
+
+            gameState.playerLight.setVisible(false);
         }
     }
 
@@ -377,6 +399,6 @@ class Level3 extends GameScene
                 { x: 6, y: 12 }
             ];
             this.retrieveStoredScore();
-            this.weather = 'night';
-        }
+            this.weather = 'night';                        
+        }        
     }
