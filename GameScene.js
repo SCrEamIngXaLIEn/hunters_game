@@ -28,7 +28,6 @@ class GameScene extends Phaser.Scene
             
             // Create backgrounds
             gameState.bgColor = this.add.rectangle(0, 0, gameState.gameOptions.levelWidth, gameState.gameOptions.levelHeight, 0x00ffbb).setOrigin(0, 0);
-            gameState.bgColor.setPipeline('Light2D');
             this.createBackgrounds();
 
             // Create player sprite
@@ -178,8 +177,13 @@ class GameScene extends Phaser.Scene
             gameState.bg1.setScrollFactor((bg1_width - config.width) / (levelWidth - config.width));
             gameState.bg2.setScrollFactor((bg2_width - config.width) / (levelWidth - config.width));
             gameState.bg3.setScrollFactor((bg3_width - config.width) / (levelWidth - config.width));
-
-            gameState.bg2.setPipeline('Light2D');
+            
+            [
+                gameState.bg1,
+                gameState.bg2,
+                gameState.bg3,
+                gameState.bgColor
+            ].forEach(element => element.setPipeline('Light2D'));
         }
 
         // Create animations
@@ -205,7 +209,7 @@ class GameScene extends Phaser.Scene
 
         // Utility function to create platforms
         createPlatform(x, y) {
-            gameState.platforms.create((233.5 * x), y * 70, 'ground').setOrigin(0, 0.5).setScale(0.5).refreshBody();
+            gameState.platforms.create((233.5 * x), y * 70, 'ground').setOrigin(0, 0.5).setScale(0.5).refreshBody().setPipeline('Light2D');
         }
 
         // Method to set weather
