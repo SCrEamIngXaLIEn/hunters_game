@@ -1,6 +1,6 @@
 {
   "name": "star-hunters",
-  "version": "0.1.1-alpha",
+  "version": "0.1.2-alpha",
   "description": "My first basic game project. A sidescrolling Contra style action game.",
   "main": "game.js",
   "license": "WTFPL",

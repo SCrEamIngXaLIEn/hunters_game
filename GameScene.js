@@ -25,11 +25,7 @@ class GameScene extends Phaser.Scene
         create () {
 
             this.initialize();
-            
-            // Create backgrounds
-            gameState.bgColor = this.add.rectangle(0, 0, gameState.gameOptions.levelWidth, gameState.gameOptions.levelHeight, 0x00ffbb).setOrigin(0, 0);
-            this.createBackgrounds();
-
+                        
             // Create player sprite
             gameState.player = this.physics.add.sprite(220, 1112, 'player').setPipeline('Light2D');
             gameState.player.setBounce(0.2);
@@ -58,7 +54,7 @@ class GameScene extends Phaser.Scene
                 child.setBounceY(Phaser.Math.FloatBetween(0.2, 0.4));
                 child.setCollideWorldBounds(true);
             });
-
+            
             // Creates bombs
             gameState.bombs = this.physics.add.group();
             
@@ -160,6 +156,10 @@ class GameScene extends Phaser.Scene
             // Variables for center of screen
             gameState.centerX = gameState.gameOptions.width / 2;
             gameState.centerY = gameState.gameOptions.height / 2;
+
+            // Create backgrounds
+            gameState.bgColor = this.add.rectangle(0, 0, gameState.gameOptions.levelWidth, gameState.gameOptions.levelHeight, 0x00ffbb).setOrigin(0, 0);
+            this.createBackgrounds();
         }
                                         
         // Creates background layers
@@ -265,6 +265,7 @@ class GameScene extends Phaser.Scene
                 if (gameState.stars.countActive(true) === 0) {
                     gameState.stars.children.iterate(function (child) {
                         child.enableBody(true, child.x, 0, true, true);
+                        child.setPipeline('Light2D');
                     });
                 
                     // Creates a new bomb each time all the stars are collected
@@ -347,7 +348,8 @@ class GameScene extends Phaser.Scene
         } 
     }
 
-    class Level1 extends GameScene {
+    class Level1 extends GameScene 
+    {
         constructor() {
             super('Level1');
             this.platformPos = [
