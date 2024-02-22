@@ -1,13 +1,14 @@
 import Phaser from 'phaser';
+import StateMachine from '../statemachine/stateMachine';
+import PlayerController from '../Game/PlayerController';
 
 export default class Game extends Phaser.Scene
 {
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 
     private player?: Phaser.Physics.Matter.Sprite;
-
-    private isTouchingGround = false;
-
+    private playerController?: PlayerController;
+ 
     constructor()
     {
         super('game');
@@ -26,10 +27,7 @@ export default class Game extends Phaser.Scene
     }
 
     create()
-    {        
-        // const { width, height } = this.scale;
-        this.createPlayerAnimations();
-
+    {  
         // Create tilemap
         const map = this.make.tilemap({ key: 'map1' });
         const tileset = map.addTilesetImage('grassland', 'tiles');
@@ -48,15 +46,11 @@ export default class Game extends Phaser.Scene
                 case 'playerSpawn':
                 {
                     // Create player
-                    this.player = this.matter.add.sprite(x, y, 'player')            
-                        .play('player-idle')
-                        .setScale(0.5)
+                    this.player = this.matter.add.sprite(x, y, 'player')
                         .setFixedRotation();
 
-                    this.player.setOnCollide((_data: MatterJS.ICollisionPair) => {
-                        this.isTouchingGround = true;
-                    })
-
+                    this.playerController = new PlayerController(this.player, this.cursors);
+                    
                     // Set up cameras
                     this.cameras.main.startFollow(this.player, true, 0.5, 0.5);
                     break;
@@ -67,78 +61,14 @@ export default class Game extends Phaser.Scene
         this.matter.world.convertTilemapLayer(ground!);
     }
 
-    update()
-    {   
-        if (!this.player)
+    update(t: number, dt: number)
+    {           
+        if (!this.playerController)
         {
             return;
         }
+        
 
-        let speed = 5;
-
-        // Controls player movement
-        if (this.cursors.left.isDown)
-        {
-            this.player.setVelocityX(-speed)
-                .play('player-walk', true)
-                .flipX = true;
-        }
-        else if (this.cursors.right.isDown)
-        {
-            this.player.setVelocityX(speed)
-                .play('player-walk', true)
-                .flipX = false;
-        }
-        else
-        {
-            this.player.setVelocityX(0)
-                .play('player-idle');
-        }
-
-        const spacePressed = Phaser.Input.Keyboard.JustDown(this.cursors.space);
-        if (this.isTouchingGround)
-        {
-            if (spacePressed)
-            {
-                this.player.setVelocityY(-12)
-                .play('player-jump', true);
-                this.isTouchingGround = false;
-            }
-            if (this.cursors.shift.isDown) 
-            {
-                speed = 7;
-            } 
-            else
-            {
-                speed = 5;
-            }
-        }
-
-    }
-
-    // Create player animations
-    private createPlayerAnimations()
-    {
-        this.anims.create({
-            key: 'player-idle',
-            frames: [{ key: 'player', frame: 'platformChar_idle.png' }]
-        });
-
-        this.anims.create({
-            key: 'player-walk',
-            frames: this.anims.generateFrameNames('player', { 
-                start: 1,
-                end: 2,
-                prefix: 'platformChar_walk',
-                suffix: '.png'
-            }),
-            frameRate: 10,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'player-jump',
-            frames: [{ key: 'player', frame: 'platformChar_jump.png' }]
-        });
-    }    
+        this.playerController.update(dt);
+    }   
 }
