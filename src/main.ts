@@ -9,11 +9,12 @@ const config: Phaser.Types.Core.GameConfig = {
 	height: 600,
 	physics: {
 		default: 'matter',
-		arcade: {
-			gravity: { y: 575 },
+		matter: {
+			debug: true
 		},
 	},
 	scene: [Game],
+	backgroundColor: 0x34a1eb,
 	title: 'Star Hunters',
     version: '0.2.0-a'
 }

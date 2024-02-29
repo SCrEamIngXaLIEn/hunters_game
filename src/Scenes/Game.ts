@@ -32,9 +32,16 @@ export default class Game extends Phaser.Scene
         const map = this.make.tilemap({ key: 'map1' });
         const tileset = map.addTilesetImage('grassland', 'tiles');
 
+        // Set world bounds
+        this.matter.world.setBounds(0, 0, 2240, 1600, 64, true, true, false, true);
+
         // Create ground layer
         const ground = map.createLayer('ground', tileset!);
         ground?.setCollisionByProperty({ collide: true });
+
+        // Create platform layer
+        const platform = map.createLayer('platforms', tileset!);
+        platform?.setCollisionByProperty({ collide: true });
 
         // Create objects
         const objectsLayer = map.getObjectLayer('objects');
@@ -52,6 +59,7 @@ export default class Game extends Phaser.Scene
                     this.playerController = new PlayerController(this.player, this.cursors);
                     
                     // Set up cameras
+                    this.cameras.main.setBounds(0, 0, 2240, 1600);
                     this.cameras.main.startFollow(this.player, true, 0.5, 0.5);
                     break;
                 }
@@ -59,6 +67,7 @@ export default class Game extends Phaser.Scene
         })
                 
         this.matter.world.convertTilemapLayer(ground!);
+        this.matter.world.convertTilemapLayer(platform!);
     }
 
     update(t: number, dt: number)

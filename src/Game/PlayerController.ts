@@ -75,7 +75,7 @@ export default class PlayerController
     // Controls jump
     private jumpOnEnter()
     {
-        this.sprite.setVelocityY(-12);
+        this.sprite.setVelocityY(-14.4);
         this.sprite.play('player-jump');
     }
     private jumpOnUpdate()
@@ -99,7 +99,7 @@ export default class PlayerController
     {
         this.sprite.anims.create({
             key: 'player-idle',
-            frames: [{ key: 'player', frame: 'platformChar_idle.png' }]
+            frames: [{ key: 'player', frame: 'player_idle.png' }]
         });
 
         this.sprite.anims.create({
@@ -107,7 +107,7 @@ export default class PlayerController
             frames: this.sprite.anims.generateFrameNames('player', { 
                 start: 1,
                 end: 2,
-                prefix: 'platformChar_walk',
+                prefix: 'player_run',
                 suffix: '.png'
             }),
             frameRate: 10,
@@ -116,7 +116,7 @@ export default class PlayerController
 
         this.sprite.anims.create({
             key: 'player-jump',
-            frames: [{ key: 'player', frame: 'platformChar_jump.png' }]
+            frames: [{ key: 'player', frame: 'player_jump.png' }]
         });
     }
 
