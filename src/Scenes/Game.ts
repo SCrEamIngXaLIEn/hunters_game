@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import StateMachine from '../statemachine/stateMachine';
 import PlayerController from '../Game/PlayerController';
+import UI from "../Scenes/UI";
 
 export default class Game extends Phaser.Scene
 {
@@ -16,18 +16,21 @@ export default class Game extends Phaser.Scene
 
     init()
     {
-        this.cursors = this.input.keyboard?.createCursorKeys();
+        this.cursors = this.input.keyboard!.createCursorKeys();
     }
 
     preload()
     {
         this.load.atlas('player', 'assets/player.png', 'assets/player.json');
         this.load.image('tiles', 'assets/platform_tilesheet.png');
+        this.load.image('star', 'assets/star.png');
         this.load.tilemapTiledJSON('map1', 'assets/map1.json');
     }
 
     create()
     {  
+        this.scene.launch('ui');
+
         // Create tilemap
         const map = this.make.tilemap({ key: 'map1' });
         const tileset = map.addTilesetImage('grassland', 'tiles');
@@ -61,6 +64,19 @@ export default class Game extends Phaser.Scene
                     // Set up cameras
                     this.cameras.main.setBounds(0, 0, 2240, 1600);
                     this.cameras.main.startFollow(this.player, true, 0.5, 0.5);
+                    
+                    break;
+                }
+
+                case 'star':
+                {
+                    const star = this.matter.add.sprite(x, y, 'star', undefined, {
+                        isStatic: true,
+                        isSensor: true
+                    });
+
+                    star.setData('type', 'star');
+
                     break;
                 }
             }

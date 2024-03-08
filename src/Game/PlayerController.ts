@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import StateMachine from "../statemachine/stateMachine";
+import { sharedInstance as events } from './EventCenter';
 
 type CursorKeys = Phaser.Types.Input.Keyboard.CursorKeys;
 
@@ -34,10 +35,36 @@ export default class PlayerController
         .setState('idle');
 
         this.sprite.setOnCollide((_data: MatterJS.ICollisionPair) => {
-            if (this.stateMachine.isCurrentState('jump'))
+            const body = _data.bodyB as MatterJS.BodyType;
+            const gameObject = body.gameObject;
+
+            if (!gameObject)
             {
-                this.stateMachine.setState('idle');
+                return;
             }
+
+            if (gameObject instanceof Phaser.Physics.Matter.TileBody)
+            {
+                if (this.stateMachine.isCurrentState('jump'))
+                {
+                    this.stateMachine.setState('idle');
+                }
+                return;
+            }
+
+            const sprite = gameObject as Phaser.Physics.Matter.Sprite;
+            const type = sprite.getData('type');
+
+            switch (type)
+            {
+                case 'star':
+                    {
+                        events.emit('star-collected');
+                        sprite.destroy();
+                        break;
+                    }
+            }
+
         })
     }
 

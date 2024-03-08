@@ -1,10 +1,10 @@
 import Phaser from 'phaser'
 
 import Game from './Scenes/Game'
+import UI from './Scenes/UI'
 
 const config: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
-	parent: 'app',
 	width: 800,
 	height: 600,
 	physics: {
@@ -13,7 +13,7 @@ const config: Phaser.Types.Core.GameConfig = {
 			debug: true
 		},
 	},
-	scene: [Game],
+	scene: [Game, UI],
 	backgroundColor: 0x34a1eb,
 	title: 'Star Hunters',
     version: '0.2.0-a'
