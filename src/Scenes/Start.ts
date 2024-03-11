@@ -16,8 +16,7 @@ export default class Start extends Phaser.Scene
 
     create()
     {
-        // Import gameConfig directly here
-        const horCenter = 800 / 2;
+        const horCenter = gameConfig.width / 2;
         
         // Create background
         const background = this.add.graphics();
@@ -31,10 +30,10 @@ export default class Start extends Phaser.Scene
         const start = this.add.image(horCenter, 365, 'start').setInteractive().setOrigin(0.5);
         
         // Create controls button
-        const controls = this.add.text(horCenter, 420, 'Controls', { font: '24px Cursive', fill: '#fff' }).setInteractive().setOrigin(0.5);
+        const controls = this.add.text(horCenter, 420, 'Controls', { font: '24px Cursive', color: '#fff' }).setInteractive().setOrigin(0.5);
         
         // Game version text
-        const versionText = this.add.text(15, 554, '', { font: '16px Cursive', fill: "#fff"});
+        const versionText = this.add.text(15, 554, '', { font: '16px Cursive', color: "#fff"});
             versionText.setText([
                 `Game Title: ${gameConfig.title}`,
                 `Version: ${gameConfig.version}`
@@ -60,8 +59,20 @@ export default class Start extends Phaser.Scene
 
         // Starts game
         start.on('pointerdown', () => {
-            this.scene.stop('Start');
-            this.scene.start('game');
+            start.setScale(0.85)
+            .on('pointerup', () => {
+                this.scene.stop('start');
+                this.scene.start('game');
+            })
+        })
+
+        // Open Controls screen
+        controls.on('pointerdown', () => {
+            controls.setScale(0.85);
+            controls.on('pointerup', () => {
+                this.scene.stop('start');
+                this.scene.start('controls');
+            })
         })
     }
 }
