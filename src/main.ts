@@ -1,22 +1,11 @@
-import Phaser from 'phaser'
+import Phaser from 'phaser';
+import gameConfig from './gameConfig';
 
-import Game from './Scenes/Game'
-import UI from './Scenes/UI'
+import Start from './Scenes/Start';
+import Game from './Scenes/Game';
+import UI from './Scenes/UI';
 
-const config: Phaser.Types.Core.GameConfig = {
-	type: Phaser.AUTO,
-	width: 800,
-	height: 600,
-	physics: {
-		default: 'matter',
-		matter: {
-			debug: true
-		},
-	},
-	scene: [Game, UI],
-	backgroundColor: 0x34a1eb,
-	title: 'Star Hunters',
-    version: '0.2.0-a'
-}
-
-export default new Phaser.Game(config)
+export const game = new Phaser.Game({
+    ...gameConfig,
+    scene: [Start, Game, UI],
+});
